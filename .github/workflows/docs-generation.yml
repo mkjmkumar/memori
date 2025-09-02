@@ -197,12 +197,20 @@ jobs:
           DOC_COUNT=$(find docs/examples -name "*-integration.md" -type f | wc -l)
           echo "Found $DOC_COUNT integration documentation files"
           
-          # Validate mkdocs.yml syntax
+          # Validate mkdocs.yml syntax with safe validation
           python3 -c "
           import yaml
+          import re
           try:
+              # Read file and replace Python object references for validation
               with open('mkdocs.yml', 'r') as f:
-                  yaml.load(f, Loader=yaml.FullLoader)
+                  content = f.read()
+              
+              # Replace Python object references with placeholder strings for validation
+              content = re.sub(r'!!python/name:[^\s]+', '\"python_object_placeholder\"', content)
+              
+              # Parse the modified content
+              yaml.safe_load(content)
               print('mkdocs.yml syntax is valid')
           except Exception as e:
               print(f'mkdocs.yml syntax error: {e}')
