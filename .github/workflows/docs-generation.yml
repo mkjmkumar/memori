@@ -202,7 +202,7 @@ jobs:
           import yaml
           try:
               with open('mkdocs.yml', 'r') as f:
-                  yaml.safe_load(f)
+                  yaml.load(f, Loader=yaml.FullLoader)
               print('mkdocs.yml syntax is valid')
           except Exception as e:
               print(f'mkdocs.yml syntax error: {e}')
