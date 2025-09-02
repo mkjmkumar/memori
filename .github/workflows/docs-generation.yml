@@ -149,7 +149,7 @@ jobs:
           echo "Installing dependencies..."
           for i in {1..3}; do
             if python -m pip install --upgrade pip && \
-               pip install anthropic==0.34.2 python-dotenv pyyaml requests; then
+               pip install "anthropic>=0.45.2" python-dotenv pyyaml requests; then
               echo "Dependencies installed successfully"
               break
             else
