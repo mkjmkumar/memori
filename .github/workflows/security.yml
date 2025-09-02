@@ -331,8 +331,13 @@ jobs:
     permissions:
       contents: read
       actions: read
+      issues: write  # Added for creating PR comments
 
     steps:
+      - name: Debug permissions
+        run: |
+          echo "GitHub token permissions: $GITHUB_TOKEN_PERMISSIONS"
+
       - name: Download dependency scan results
         if: needs.dependency-scan.result == 'success' || needs.dependency-scan.result == 'failure'
         continue-on-error: true
