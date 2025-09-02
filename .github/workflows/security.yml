@@ -1,4 +1,4 @@
-name: Security Scans
+name: Security
 
 on:
   push:
@@ -9,6 +9,16 @@ on:
     # Run security scans daily at 2 AM UTC
     - cron: '0 2 * * *'
   workflow_dispatch:
+    inputs:
+      scan_type:
+        description: 'Type of security scan'
+        required: false
+        type: choice
+        default: 'full'
+        options:
+          - 'full'
+          - 'dependencies-only'
+          - 'code-only'
 
 permissions:
   contents: read
