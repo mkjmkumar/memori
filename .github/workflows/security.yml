@@ -53,10 +53,13 @@ jobs:
           key: ${{ env.CACHE_VERSION }}-${{ runner.os }}-security-pip-${{ hashFiles('**/requirements*.txt', '**/pyproject.toml') }}
 
       - name: Check for requirements.txt
+        id: check-requirements
         run: |
-          if [ ! -f requirements.txt ]; then
+          if [ -f requirements.txt ]; then
+            echo "result=found" >> $GITHUB_OUTPUT
+          else
+            echo "result=missing" >> $GITHUB_OUTPUT
             echo "requirements.txt not found, skipping dependency installation"
-            exit 0
           fi
 
       - name: Install dependencies
@@ -81,6 +84,13 @@ jobs:
           pip-audit --format=json --output=pip-audit-report.json --progress-spinner=off || true
           pip-audit --format=cyclonedx --output=sbom.json || true
           pip-audit
+
+      - name: Create empty artifact files if scans skipped
+        if: steps.check-requirements.outputs.result == 'missing'
+        run: |
+          echo "No dependency scans performed due to missing requirements.txt" > safety-report.json
+          echo "No dependency scans performed due to missing requirements.txt" > pip-audit-report.json
+          echo "No dependency scans performed due to missing requirements.txt" > sbom.json
 
       - name: Upload dependency scan results
         if: always()
@@ -118,39 +128,49 @@ jobs:
             pip install -r requirements.txt
           fi
 
-      - name: Run Bandit security linter
+      - name: Check for scan directory
+        id: check-scan-dir
         run: |
-          echo "Running Bandit security scan..."
           if [ -d "${{ env.SCAN_DIR }}" ]; then
-            bandit -r ${{ env.SCAN_DIR }}/ \
-              -f json \
-              -o bandit-report.json \
-              --severity-level medium \
-              --confidence-level medium \
-              --exclude tests/ || true
-            bandit -r ${{ env.SCAN_DIR }}/ \
-              --severity-level medium \
-              --confidence-level medium \
-              --exclude tests/
+            echo "result=found" >> $GITHUB_OUTPUT
           else
-            echo "Directory ${{ env.SCAN_DIR }} not found, skipping Bandit scan"
+            echo "result=missing" >> $GITHUB_OUTPUT
+            echo "Directory ${{ env.SCAN_DIR }} not found, skipping code scans"
           fi
 
+      - name: Run Bandit security linter
+        if: steps.check-scan-dir.outputs.result == 'found'
+        run: |
+          echo "Running Bandit security scan..."
+          bandit -r ${{ env.SCAN_DIR }}/ \
+            -f json \
+            -o bandit-report.json \
+            --severity-level medium \
+            --confidence-level medium \
+            --exclude tests/ || true
+          bandit -r ${{ env.SCAN_DIR }}/ \
+            --severity-level medium \
+            --confidence-level medium \
+            --exclude tests/
+
       - name: Run Semgrep security scan
+        if: steps.check-scan-dir.outputs.result == 'found'
         run: |
           echo "Running Semgrep security scan..."
-          if [ -d "${{ env.SCAN_DIR }}" ]; then
-            semgrep --config=auto ${{ env.SCAN_DIR }}/ \
-              --json \
-              --output=semgrep-report.json \
-              --severity=WARNING \
-              --severity=ERROR || true
-            semgrep --config=auto ${{ env.SCAN_DIR }}/ \
-              --severity=WARNING \
-              --severity=ERROR
-          else
-            echo "Directory ${{ env.SCAN_DIR }} not found, skipping Semgrep scan"
-          fi
+          semgrep --config=auto ${{ env.SCAN_DIR }}/ \
+            --json \
+            --output=semgrep-report.json \
+            --severity=WARNING \
+            --severity=ERROR || true
+          semgrep --config=auto ${{ env.SCAN_DIR }}/ \
+            --severity=WARNING \
+            --severity=ERROR
+
+      - name: Create empty artifact files if scans skipped
+        if: steps.check-scan-dir.outputs.result == 'missing'
+        run: |
+          echo "No code scans performed due to missing directory ${{ env.SCAN_DIR }}" > bandit-report.json
+          echo "No code scans performed due to missing directory ${{ env.SCAN_DIR }}" > semgrep-report.json
 
       - name: Upload code scan results
         if: always()
@@ -239,10 +259,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check for Dockerfile
+        id: check-dockerfile
         run: |
-          if [ ! -f Dockerfile ]; then
+          if [ -f Dockerfile ]; then
+            echo "result=found" >> $GITHUB_OUTPUT
+          else
+            echo "result=missing" >> $GITHUB_OUTPUT
             echo "Dockerfile not found, skipping container scan"
-            exit 0
           fi
 
       - name: Build Docker image
@@ -311,12 +334,16 @@ jobs:
 
     steps:
       - name: Download dependency scan results
+        if: needs.dependency-scan.result == 'success' || needs.dependency-scan.result == 'failure'
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: dependency-scan-results
           path: dependency-scan-results
 
       - name: Download code scan results
+        if: needs.code-security-scan.result == 'success' || needs.code-security-scan.result == 'failure'
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: code-security-scan-results
@@ -328,23 +355,33 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Scan Type | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|-----------|---------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Dependency Scan | ${{ needs.dependency-scan.result == 'success' && 'Passed' || 'Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Code Security | ${{ needs.code-security-scan.result == 'success' && 'Passed' || 'Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Secrets Scan | ${{ needs.secrets-scan.result == 'success' && 'Passed' || 'Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependency Scan | ${{ needs.dependency-scan.result == 'skipped' && 'Skipped' || (needs.dependency-scan.result == 'success' && 'Passed' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Code Security | ${{ needs.code-security-scan.result == 'skipped' && 'Skipped' || (needs.code-security-scan.result == 'success' && 'Passed' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Secrets Scan | ${{ needs.secrets-scan.result == 'skipped' && 'Skipped' || (needs.secrets-scan.result == 'success' && 'Passed' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           if [[ "${{ needs.dependency-scan.result }}" == "success" && "${{ needs.code-security-scan.result }}" == "success" && "${{ needs.secrets-scan.result }}" == "success" ]]; then
             echo "**All security scans passed!**" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.dependency-scan.result }}" == "skipped" && "${{ needs.code-security-scan.result }}" == "skipped" && "${{ needs.secrets-scan.result }}" == "skipped" ]]; then
+            echo "**All security scans were skipped.** Please check workflow conditions." >> $GITHUB_STEP_SUMMARY
           else
-            echo "**Some security scans failed or found issues.** Please review the detailed reports." >> $GITHUB_STEP_SUMMARY
+            echo "**Some security scans failed, were skipped, or found issues.** Please review the detailed reports." >> $GITHUB_STEP_SUMMARY
           fi
           
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Scan Details" >> $GITHUB_STEP_SUMMARY
-          echo "- **Dependency vulnerabilities**: Check Safety and pip-audit reports" >> $GITHUB_STEP_SUMMARY
-          echo "- **Code security issues**: Check Bandit and Semgrep reports" >> $GITHUB_STEP_SUMMARY
+          if [ -d "dependency-scan-results" ]; then
+            echo "- **Dependency vulnerabilities**: Check Safety and pip-audit reports in dependency-scan-results" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Dependency vulnerabilities**: No reports available (scan skipped or failed)" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ -d "code-security-scan-results" ]; then
+            echo "- **Code security issues**: Check Bandit and Semgrep reports in code-security-scan-results" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Code security issues**: No reports available (scan skipped or failed)" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "- **Exposed secrets**: Check TruffleHog results" >> $GITHUB_STEP_SUMMARY
-          echo "- **Download artifacts** to view detailed reports" >> $GITHUB_STEP_SUMMARY
+          echo "- **Download artifacts** to view detailed reports (if available)" >> $GITHUB_STEP_SUMMARY
 
       - name: Comment on PR (if applicable)
         if: github.event_name == 'pull_request'
@@ -358,7 +395,7 @@ jobs:
             if (needs['dependency-scan'].result !== 'success' || 
                 needs['code-security-scan'].result !== 'success' || 
                 needs['secrets-scan'].result !== 'success') {
-              status = 'Some security scans failed or found issues.';
+              status = 'Some security scans failed, were skipped, or found issues.';
               icon = 'Warning';
             }
             
@@ -368,11 +405,11 @@ jobs:
             
             | Scan Type | Status |
             |-----------|---------|
-            | Dependency Scan | ${needs['dependency-scan'].result === 'success' ? 'Passed' : 'Failed'} |
-            | Code Security | ${needs['code-security-scan'].result === 'success' ? 'Passed' : 'Failed'} |
-            | Secrets Scan | ${needs['secrets-scan'].result === 'success' ? 'Passed' : 'Failed'} |
+            | Dependency Scan | ${needs['dependency-scan'].result === 'skipped' ? 'Skipped' : (needs['dependency-scan'].result === 'success' ? 'Passed' : 'Failed')} |
+            | Code Security | ${needs['code-security-scan'].result === 'skipped' ? 'Skipped' : (needs['code-security-scan'].result === 'success' ? 'Passed' : 'Failed')} |
+            | Secrets Scan | ${needs['secrets-scan'].result === 'skipped' ? 'Skipped' : (needs['secrets-scan'].result === 'success' ? 'Passed' : 'Failed')} |
             
-            View detailed reports in the workflow artifacts.`;
+            View detailed reports in the workflow artifacts (if available).`;
             
             github.rest.issues.createComment({
               issue_number: context.issue.number,
