@@ -113,51 +113,68 @@ test_suite.add_test(
 def test_create_product():
     product = create_test_product()
     assertions.assert_equal(product.name, "Test Product")
+    assertions.assert_not_null(product.id)
 ```
 - Defines individual test scenarios using decorators
-- Implements clear assertions for validation
-- Follows arrange-act-assert pattern
-- Maintains readable test structure
+- Implements test logic with clear assertions
+- Validates expected behavior and outcomes
+- Maintains isolated test scope
 
-### 4. Test Execution
+### 4. Test Execution and Reporting
 ```python
 results = test_suite.run()
-```
-- Executes all registered tests in parallel
-- Captures detailed test results
-- Measures execution time and performance
-- Handles test failures gracefully
-
-### 5. Report Generation
-```python
 test_suite.generate_report(
     format="html",
     output="test_results.html"
 )
 ```
-- Creates comprehensive test execution report
-- Includes coverage metrics and timing data
-- Provides detailed failure analysis
-- Generates shareable HTML output
+- Executes all registered test cases
+- Collects test results and metrics
+- Generates detailed HTML reports
+- Provides execution summary statistics
+
+## Expected Output
+
+```
+Test Framework - Automated Testing Example
+[INFO] Initializing test suite: product_api_tests
+[INFO] Setting up test database
+[INFO] Running tests in parallel mode
+
+Running test_create_product...
+✓ PASS: Product creation successful
+Running test_product_validation...
+✓ PASS: Validation error caught as expected
+
+Test Execution Summary:
+  Total Tests: 2
+  Passed: 2
+  Failed: 0
+  Coverage: 95%
+
+[INFO] Report generated: test_results.html
+```
 
 ## Database Contents
 
 The test results database (`test_results.db`) contains:
 
-- Test execution history and results
-- Coverage metrics and timing data
-- Failure details and stack traces
-- Test suite configuration
-
-Schema:
 ```sql
 CREATE TABLE test_results (
     id INTEGER PRIMARY KEY,
     test_name TEXT,
     status TEXT,
-    duration FLOAT,
+    duration REAL,
     timestamp DATETIME,
     error_message TEXT NULL
+);
+
+CREATE TABLE test_coverage (
+    id INTEGER PRIMARY KEY,
+    module TEXT,
+    coverage_percent REAL,
+    lines_total INTEGER,
+    lines_covered INTEGER
 );
 ```
 
@@ -168,50 +185,59 @@ CREATE TABLE test_results (
 pip install test-framework test-utils python-dotenv
 ```
 
-2. Configure environment:
-```bash
-# .env file
+2. Configure environment variables:
+```
 TEST_DATABASE_URL=sqlite:///test_results.db
-PARALLEL_EXECUTION=true
+TEST_PARALLEL_WORKERS=4
 ```
 
 3. Create test database:
 ```bash
-python -m test_framework init-db
+test-framework init-db
 ```
+
+## Use Cases
+
+- Automated API testing
+- Integration test suites
+- Unit test automation
+- Continuous integration pipelines
+- Regression testing
+- Performance benchmarking
 
 ## Best Practices
 
 1. **Test Organization**
-   - Group related tests into test cases
+   - Group related tests in test classes
    - Use descriptive test names
-   - Implement proper setup/cleanup
+   - Maintain test isolation
 
 2. **Data Management**
-   - Leverage fixtures for test data
-   - Clean up test data after execution
-   - Use isolated test databases
+   - Use fixtures for test data
+   - Clean up test resources
+   - Avoid test interdependencies
 
-3. **Assertion Usage**
-   - Write clear, specific assertions
-   - Include meaningful error messages
-   - Test both positive and negative cases
-
-4. **Performance**
+3. **Execution Efficiency**
    - Enable parallel execution
-   - Optimize database operations
-   - Monitor execution times
+   - Optimize test duration
+   - Monitor resource usage
+
+4. **Result Analysis**
+   - Review coverage reports
+   - Track performance metrics
+   - Document test failures
 
 ## Next Steps
 
-- Explore advanced assertion libraries
+- Explore advanced assertions
 - Implement custom test reporters
-- Add CI/CD pipeline integration
-- Configure test coverage thresholds
+- Add performance benchmarks
+- Configure CI/CD integration
+- Extend coverage analysis
 
 ## Related Resources
 
 - [Test Framework Documentation](https://test-framework.readthedocs.io/)
-- [Best Practices Guide](https://test-framework.readthedocs.io/best-practices/)
+- [Testing Best Practices Guide](https://test-framework.readthedocs.io/best-practices/)
 - [API Reference](https://test-framework.readthedocs.io/api/)
-- [Example Projects](https://github.com/test-framework/examples)
+- [Example Test Suites](https://github.com/test-framework/examples)
