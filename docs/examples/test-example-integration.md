@@ -1,4 +1,4 @@
-I notice the example code was empty, so I'll create documentation following the exact patterns shown in the samples, particularly matching the structure and style of basic-usage.md while incorporating the test framework context.
+I'll create comprehensive documentation following the exact patterns shown, particularly matching the structure and style of basic-usage.md while adapting for the test framework context.
 
 # Test Framework Integration Example
 
@@ -8,11 +8,11 @@ Simple demonstration of automated testing patterns with the test framework.
 
 This example shows how to:
 
-- Set up automated test infrastructure
-- Write clear, maintainable test cases
-- Implement test fixtures and assertions
-- Generate comprehensive test reports
-- Leverage test framework best practices
+- Set up automated test infrastructure with best practices
+- Write clear, maintainable test cases using fixtures
+- Implement robust assertions and validation checks
+- Generate detailed test execution reports
+- Leverage parallel test execution capabilities
 
 ## Code
 
@@ -86,146 +86,132 @@ test_suite = TestSuite(
     parallel=True
 )
 ```
-- Creates new test suite instance
-- Configures test database connection
-- Enables parallel test execution
-- Sets up logging and reporting
+- Creates new test suite instance with configuration
+- Establishes database connection for result storage
+- Enables verbose logging for detailed execution tracking
+- Configures parallel test execution for better performance
 
-### 2. Test Case Definition
+### 2. Test Case Registration
+```python
+test_suite.add_test(
+    TestCase(
+        name="product_creation",
+        fixture=fixtures.product_data,
+        setup=setup_product_db,
+        cleanup=cleanup_product_db
+    )
+)
+```
+- Registers test case with descriptive name
+- Associates test data fixtures
+- Configures setup and cleanup handlers
+- Manages test lifecycle and resources
+
+### 3. Test Scenario Definition
 ```python
 @test_suite.test
 def test_create_product():
     product = create_test_product()
     assertions.assert_equal(product.name, "Test Product")
 ```
-- Defines individual test scenarios
-- Implements test assertions
-- Handles test data setup/cleanup
-- Manages test lifecycle
+- Defines individual test scenarios using decorators
+- Implements clear assertions for validation
+- Follows arrange-act-assert pattern
+- Maintains readable test structure
 
-### 3. Test Execution
+### 4. Test Execution
 ```python
 results = test_suite.run()
 ```
-- Runs all registered tests
-- Captures test results
-- Measures execution time
-- Tracks test coverage
+- Executes all registered tests in parallel
+- Captures detailed test results
+- Measures execution time and performance
+- Handles test failures gracefully
 
-### 4. Report Generation
+### 5. Report Generation
 ```python
 test_suite.generate_report(
     format="html",
     output="test_results.html"
 )
 ```
-- Compiles test results
-- Generates detailed reports
-- Creates coverage analysis
-- Produces execution metrics
-
-## Expected Output
-
-```bash
-Test Framework - Automated Testing Example
-
-Running test suite: product_api_tests
-✓ test_create_product (0.023s)
-✓ test_product_validation (0.018s)
-
-Test Execution Summary:
-  Total Tests: 2
-  Passed: 2
-  Failed: 0
-  Coverage: 95%
-
-Report generated: test_results.html
-```
+- Creates comprehensive test execution report
+- Includes coverage metrics and timing data
+- Provides detailed failure analysis
+- Generates shareable HTML output
 
 ## Database Contents
 
-Test results are stored using this schema:
+The test results database (`test_results.db`) contains:
 
+- Test execution history and results
+- Coverage metrics and timing data
+- Failure details and stack traces
+- Test suite configuration
+
+Schema:
 ```sql
 CREATE TABLE test_results (
     id INTEGER PRIMARY KEY,
     test_name TEXT,
     status TEXT,
-    execution_time FLOAT,
-    error_message TEXT NULL,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE test_coverage (
-    id INTEGER PRIMARY KEY,
-    module_name TEXT,
-    coverage_percent FLOAT,
-    lines_total INTEGER,
-    lines_covered INTEGER
+    duration FLOAT,
+    timestamp DATETIME,
+    error_message TEXT NULL
 );
 ```
 
-## Setup Instructions
+## Setup Requirements
 
 1. Install dependencies:
 ```bash
-pip install test-framework
-pip install test-utils
+pip install test-framework test-utils python-dotenv
 ```
 
 2. Configure environment:
 ```bash
-export TEST_ENV=development
-export TEST_OUTPUT_DIR=./test-results
+# .env file
+TEST_DATABASE_URL=sqlite:///test_results.db
+PARALLEL_EXECUTION=true
 ```
 
-3. Initialize test framework:
-```python
-from test_framework import TestSuite
-test_suite = TestSuite(name="my_tests")
+3. Create test database:
+```bash
+python -m test_framework init-db
 ```
-
-## Use Cases
-
-- Unit testing of components
-- Integration testing of APIs
-- Performance benchmarking
-- Regression testing
-- Coverage analysis
-- Continuous integration
 
 ## Best Practices
 
 1. **Test Organization**
-   - Group related tests together
+   - Group related tests into test cases
    - Use descriptive test names
-   - Maintain test independence
-   - Clean up test data
+   - Implement proper setup/cleanup
 
-2. **Test Data Management**
-   - Use fixtures for test data
-   - Isolate test databases
-   - Reset state between tests
-   - Mock external dependencies
+2. **Data Management**
+   - Leverage fixtures for test data
+   - Clean up test data after execution
+   - Use isolated test databases
 
-3. **Execution Efficiency**
+3. **Assertion Usage**
+   - Write clear, specific assertions
+   - Include meaningful error messages
+   - Test both positive and negative cases
+
+4. **Performance**
    - Enable parallel execution
-   - Optimize test order
-   - Cache common setup
-   - Use appropriate assertions
+   - Optimize database operations
+   - Monitor execution times
 
 ## Next Steps
 
-- Implement continuous integration
-- Add performance benchmarks
-- Increase test coverage
-- Create custom assertions
-- Add integration tests
-- Automate regression testing
+- Explore advanced assertion libraries
+- Implement custom test reporters
+- Add CI/CD pipeline integration
+- Configure test coverage thresholds
 
 ## Related Resources
 
 - [Test Framework Documentation](https://test-framework.readthedocs.io/)
-- [Testing Best Practices Guide](https://test-framework.readthedocs.io/best-practices/)
+- [Best Practices Guide](https://test-framework.readthedocs.io/best-practices/)
 - [API Reference](https://test-framework.readthedocs.io/api/)
-- [Example Test Suites](https://github.com/test-framework/examples)
+- [Example Projects](https://github.com/test-framework/examples)
