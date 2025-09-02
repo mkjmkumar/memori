@@ -326,9 +326,9 @@ def update_mkdocs_nav_safe(new_docs: Dict[str, str]) -> Tuple[bool, Optional[str
             shutil.copy2(mkdocs_path, backup_path)
             logger.info(f"Created backup: {backup_path}")
         
-        # Read current config
+        # Read current config with full YAML support for Python object references
         with open(mkdocs_path, 'r', encoding='utf-8') as f:
-            mkdocs_config = yaml.safe_load(f)
+            mkdocs_config = yaml.load(f, Loader=yaml.FullLoader)
         
         if not mkdocs_config or 'nav' not in mkdocs_config:
             return False, "Invalid mkdocs.yml structure"
@@ -375,12 +375,13 @@ def update_mkdocs_nav_safe(new_docs: Dict[str, str]) -> Tuple[bool, Optional[str
             logger.info("No new navigation entries needed")
             return True, None
         
-        # Write updated config with atomic operation
+        # Write updated config with atomic operation using full dumper to preserve Python references
         success, error = write_file_content(mkdocs_path, yaml.dump(
             mkdocs_config, 
             default_flow_style=False, 
             sort_keys=False,
-            allow_unicode=True
+            allow_unicode=True,
+            Dumper=yaml.Dumper
         ))
         
         if success:
