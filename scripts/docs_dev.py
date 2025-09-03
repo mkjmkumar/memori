@@ -100,7 +100,10 @@ class MkDocsDevHelper:
                 )
                 return True
         except FileNotFoundError:
-            self.print_status("MkDocs not found (FileNotFoundError). This likely means MkDocs is not installed.", "ERROR")
+            self.print_status(
+                "MkDocs not found (FileNotFoundError). This likely means MkDocs is not installed.",
+                "ERROR",
+            )
 
         self.print_status(
             "Some dependencies may be missing. Checking individually...", "WARNING"
