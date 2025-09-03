@@ -172,9 +172,9 @@ CREATE TABLE test_results (
 CREATE TABLE test_coverage (
     id INTEGER PRIMARY KEY,
     module TEXT,
-    coverage_percent REAL,
     lines_total INTEGER,
-    lines_covered INTEGER
+    lines_covered INTEGER,
+    coverage_percent REAL
 );
 ```
 
@@ -186,7 +186,7 @@ pip install test-framework test-utils python-dotenv
 ```
 
 2. Configure environment variables:
-```
+```bash
 TEST_DATABASE_URL=sqlite:///test_results.db
 TEST_PARALLEL_WORKERS=4
 ```
@@ -219,25 +219,25 @@ test-framework init-db
 
 3. **Execution Efficiency**
    - Enable parallel execution
-   - Optimize test duration
-   - Monitor resource usage
+   - Optimize setup/teardown
+   - Monitor test duration
 
 4. **Result Analysis**
    - Review coverage reports
-   - Track performance metrics
-   - Document test failures
+   - Track failing tests
+   - Maintain test history
 
 ## Next Steps
 
 - Explore advanced assertions
-- Implement custom test reporters
-- Add performance benchmarks
+- Implement custom fixtures
 - Configure CI/CD integration
-- Extend coverage analysis
+- Add performance metrics
+- Scale test infrastructure
 
 ## Related Resources
 
 - [Test Framework Documentation](https://test-framework.readthedocs.io/)
 - [Testing Best Practices Guide](https://test-framework.readthedocs.io/best-practices/)
 - [API Reference](https://test-framework.readthedocs.io/api/)
-- [Example Test Suites](https://github.com/test-framework/examples)
+- [Example Test Suites](https://github.com/test-framework/examples/)
