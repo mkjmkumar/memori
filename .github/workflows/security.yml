@@ -20,9 +20,13 @@ on:
           - 'dependencies-only'
           - 'code-only'
 
-# Define default permissions
+# Define default permissions - FIXED: Added pull-requests write permission
 permissions:
   contents: read
+  issues: write
+  pull-requests: write
+  security-events: write
+  actions: read
 
 env:
   CACHE_VERSION: v1
@@ -331,12 +335,25 @@ jobs:
     permissions:
       contents: read
       actions: read
-      issues: write  # Added for creating PR comments
+      issues: write
+      pull-requests: write  # FIXED: Added explicit PR write permission
 
     steps:
-      - name: Debug permissions
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify permissions
+        id: check-permissions
         run: |
-          echo "GitHub token permissions: $GITHUB_TOKEN_PERMISSIONS"
+          echo "Checking GitHub token permissions..."
+          echo "Event: ${{ github.event_name }}"
+          echo "Repository: ${{ github.repository }}"
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "can_comment=true" >> $GITHUB_OUTPUT
+            echo "pr_number=${{ github.event.number }}" >> $GITHUB_OUTPUT
+          else
+            echo "can_comment=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Download dependency scan results
         if: needs.dependency-scan.result == 'success' || needs.dependency-scan.result == 'failure'
@@ -388,37 +405,71 @@ jobs:
           echo "- **Exposed secrets**: Check TruffleHog results" >> $GITHUB_STEP_SUMMARY
           echo "- **Download artifacts** to view detailed reports (if available)" >> $GITHUB_STEP_SUMMARY
 
-      - name: Comment on PR (if applicable)
-        if: github.event_name == 'pull_request'
+      - name: Comment on PR (with error handling)
+        if: steps.check-permissions.outputs.can_comment == 'true'
         uses: actions/github-script@v7
+        continue-on-error: true
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const needs = ${{ toJson(needs) }};
-            let status = 'All security scans passed!';
-            let icon = 'Summary';
-            
-            if (needs['dependency-scan'].result !== 'success' || 
-                needs['code-security-scan'].result !== 'success' || 
-                needs['secrets-scan'].result !== 'success') {
-              status = 'Some security scans failed, were skipped, or found issues.';
-              icon = 'Warning';
+            try {
+              const needs = ${{ toJson(needs) }};
+              let status = 'All security scans passed!';
+              let icon = 'Summary';
+              
+              if (needs['dependency-scan'].result !== 'success' || 
+                  needs['code-security-scan'].result !== 'success' || 
+                  needs['secrets-scan'].result !== 'success') {
+                status = 'Some security scans failed, were skipped, or found issues.';
+                icon = 'Warning';
+              }
+              
+              const body = `## ${icon} Security Scan Results
+              
+              ${status}
+              
+              | Scan Type | Status |
+              |-----------|---------|
+              | Dependency Scan | ${needs['dependency-scan'].result === 'skipped' ? '⏭️ Skipped' : (needs['dependency-scan'].result === 'success' ? '✅ Passed' : '❌ Failed')} |
+              | Code Security | ${needs['code-security-scan'].result === 'skipped' ? '⏭️ Skipped' : (needs['code-security-scan'].result === 'success' ? '✅ Passed' : '❌ Failed')} |
+              | Secrets Scan | ${needs['secrets-scan'].result === 'skipped' ? '⏭️ Skipped' : (needs['secrets-scan'].result === 'success' ? '✅ Passed' : '❌ Failed')} |
+              
+              View detailed reports in the workflow artifacts (if available).
+              
+              <details>
+              <summary>🔧 Workflow Information</summary>
+              
+              - **Workflow Run**: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+              - **Triggered by**: ${{ github.event_name }}
+              - **Branch**: ${{ github.head_ref || github.ref_name }}
+              - **Commit**: ${{ github.sha }}
+              </details>`;
+              
+              console.log('Attempting to create PR comment...');
+              
+              await github.rest.issues.createComment({
+                issue_number: ${{ steps.check-permissions.outputs.pr_number }},
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+              
+              console.log('PR comment created successfully!');
+              
+            } catch (error) {
+              console.error('Failed to create PR comment:', error.message);
+              console.error('Error details:', error);
+              
+              // Log error details for debugging
+              core.warning(`Failed to comment on PR: ${error.message}`);
+              
+              // Continue workflow execution despite comment failure
+              return;
             }
-            
-            const body = `## ${icon} Security Scan Results
-            
-            ${status}
-            
-            | Scan Type | Status |
-            |-----------|---------|
-            | Dependency Scan | ${needs['dependency-scan'].result === 'skipped' ? 'Skipped' : (needs['dependency-scan'].result === 'success' ? 'Passed' : 'Failed')} |
-            | Code Security | ${needs['code-security-scan'].result === 'skipped' ? 'Skipped' : (needs['code-security-scan'].result === 'success' ? 'Passed' : 'Failed')} |
-            | Secrets Scan | ${needs['secrets-scan'].result === 'skipped' ? 'Skipped' : (needs['secrets-scan'].result === 'success' ? 'Passed' : 'Failed')} |
-            
-            View detailed reports in the workflow artifacts (if available).`;
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            });
+
+      - name: Fallback notification
+        if: failure() && steps.check-permissions.outputs.can_comment == 'true'
+        run: |
+          echo "PR comment failed, but security scans completed."
+          echo "Check the workflow summary and artifacts for detailed results."
+          echo "::warning::Security scan results are available in artifacts, but PR commenting failed due to permissions."
