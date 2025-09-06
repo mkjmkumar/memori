@@ -19,6 +19,7 @@ openai>=1.0.0
 # Optional: Database drivers (install as needed)
 # psycopg2-binary>=2.9.0  # PostgreSQL
 # PyMySQL>=1.0.0  # MySQL
+pymongo>=4.0.0  # MongoDB (now supported natively)
 
 # Optional: Additional AI/LLM integrations (install as needed)
 # anthropic>=0.3.0
