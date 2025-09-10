@@ -27,7 +27,7 @@ print("Initializing Memori with Neon PostgreSQL database...")
 neon_memory = Memori(
     database_connect="postgresql://username:password@hostname/database?sslmode=require&channel_binding=require",
     conscious_ingest=True,
-    auto_ingest=True
+    auto_ingest=True,
 )
 
 print("Enabling memory tracking...")
