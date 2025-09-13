@@ -94,15 +94,22 @@ class SearchService:
                 )
 
         except Exception as e:
-            logger.warning(f"Full-text search failed: {e}, falling back to LIKE search")
-            results = self._search_like_fallback(
-                query,
-                namespace,
-                category_filter,
-                limit,
-                search_short_term,
-                search_long_term,
-            )
+            logger.error(f"Full-text search failed for query '{query}' in namespace '{namespace}': {e}")
+            logger.debug(f"Full-text search error details: {type(e).__name__}: {str(e)}", exc_info=True)
+            logger.warning(f"Falling back to LIKE search for query '{query}'")
+            try:
+                results = self._search_like_fallback(
+                    query,
+                    namespace,
+                    category_filter,
+                    limit,
+                    search_short_term,
+                    search_long_term,
+                )
+                logger.debug(f"LIKE fallback search returned {len(results)} results")
+            except Exception as fallback_e:
+                logger.error(f"LIKE fallback search also failed for query '{query}': {fallback_e}")
+                results = []
 
         return self._rank_and_limit_results(results, limit)
 
@@ -117,6 +124,11 @@ class SearchService:
     ) -> List[Dict[str, Any]]:
         """Search using SQLite FTS5"""
         try:
+            # Use parameters to validate search scope
+            if not search_short_term and not search_long_term:
+                logger.debug("No memory types specified for search, defaulting to both")
+                search_short_term = search_long_term = True
+
             # Build FTS query
             fts_query = f'"{query.strip()}"'
 
@@ -167,7 +179,8 @@ class SearchService:
             return [dict(row) for row in result]
 
         except Exception as e:
-            logger.debug(f"SQLite FTS5 search failed: {e}")
+            logger.error(f"SQLite FTS5 search failed for query '{query}' in namespace '{namespace}': {e}")
+            logger.debug(f"SQLite FTS5 error details: {type(e).__name__}: {str(e)}", exc_info=True)
             # Roll back the transaction to recover from error state
             self.session.rollback()
             return []
@@ -185,6 +198,10 @@ class SearchService:
         results = []
 
         try:
+            # Apply limit proportionally between memory types
+            short_limit = limit // 2 if search_short_term and search_long_term else limit
+            long_limit = limit - short_limit if search_short_term and search_long_term else limit
+
             # Search short-term memory if requested
             if search_short_term:
                 short_query = self.session.query(ShortTermMemory).filter(
@@ -203,7 +220,7 @@ class SearchService:
                         ShortTermMemory.category_primary.in_(category_filter)
                     )
 
-                # Add relevance score
+                # Add relevance score and limit
                 short_results = self.session.execute(
                     short_query.statement.add_columns(
                         text(
@@ -211,7 +228,7 @@ class SearchService:
                         ).params(query=query),
                         text("'short_term' as memory_type"),
                         text("'mysql_fulltext' as search_strategy"),
-                    )
+                    ).limit(short_limit)
                 ).fetchall()
 
                 results.extend([dict(row) for row in short_results])
@@ -234,7 +251,7 @@ class SearchService:
                         LongTermMemory.category_primary.in_(category_filter)
                     )
 
-                # Add relevance score
+                # Add relevance score and limit
                 long_results = self.session.execute(
                     long_query.statement.add_columns(
                         text(
@@ -242,7 +259,7 @@ class SearchService:
                         ).params(query=query),
                         text("'long_term' as memory_type"),
                         text("'mysql_fulltext' as search_strategy"),
-                    )
+                    ).limit(long_limit)
                 ).fetchall()
 
                 results.extend([dict(row) for row in long_results])
@@ -250,7 +267,8 @@ class SearchService:
             return results
 
         except Exception as e:
-            logger.debug(f"MySQL FULLTEXT search failed: {e}")
+            logger.error(f"MySQL FULLTEXT search failed for query '{query}' in namespace '{namespace}': {e}")
+            logger.debug(f"MySQL FULLTEXT error details: {type(e).__name__}: {str(e)}", exc_info=True)
             # Roll back the transaction to recover from error state
             self.session.rollback()
             return []
@@ -268,6 +286,10 @@ class SearchService:
         results = []
 
         try:
+            # Apply limit proportionally between memory types
+            short_limit = limit // 2 if search_short_term and search_long_term else limit
+            long_limit = limit - short_limit if search_short_term and search_long_term else limit
+
             # Prepare query for tsquery - handle spaces and special characters
             # Convert simple query to tsquery format (join words with &)
             tsquery_text = " & ".join(query.split())
@@ -290,7 +312,7 @@ class SearchService:
                         ShortTermMemory.category_primary.in_(category_filter)
                     )
 
-                # Add relevance score
+                # Add relevance score and limit
                 short_results = self.session.execute(
                     short_query.statement.add_columns(
                         text(
@@ -298,7 +320,7 @@ class SearchService:
                         ).params(query=tsquery_text),
                         text("'short_term' as memory_type"),
                         text("'postgresql_fts' as search_strategy"),
-                    ).order_by(text("search_score DESC"))
+                    ).order_by(text("search_score DESC")).limit(short_limit)
                 ).fetchall()
 
                 results.extend([dict(row) for row in short_results])
@@ -321,7 +343,7 @@ class SearchService:
                         LongTermMemory.category_primary.in_(category_filter)
                     )
 
-                # Add relevance score
+                # Add relevance score and limit
                 long_results = self.session.execute(
                     long_query.statement.add_columns(
                         text(
@@ -329,7 +351,7 @@ class SearchService:
                         ).params(query=tsquery_text),
                         text("'long_term' as memory_type"),
                         text("'postgresql_fts' as search_strategy"),
-                    ).order_by(text("search_score DESC"))
+                    ).order_by(text("search_score DESC")).limit(long_limit)
                 ).fetchall()
 
                 results.extend([dict(row) for row in long_results])
@@ -337,7 +359,8 @@ class SearchService:
             return results
 
         except Exception as e:
-            logger.debug(f"PostgreSQL FTS search failed: {e}")
+            logger.error(f"PostgreSQL FTS search failed for query '{query}' in namespace '{namespace}': {e}")
+            logger.debug(f"PostgreSQL FTS error details: {type(e).__name__}: {str(e)}", exc_info=True)
             # Roll back the transaction to recover from error state
             self.session.rollback()
             return []
