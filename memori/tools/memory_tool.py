@@ -96,7 +96,25 @@ class MemoryTool:
             )
 
             if not results:
-                return f"No relevant memories found for query: '{query}'"
+                logger.debug(f"Primary search returned no results for query: '{query}', trying fallback search")
+                # Try fallback direct database search
+                try:
+                    fallback_results = self.memori.db_manager.search_memories(
+                        query=query,
+                        namespace=self.memori.namespace,
+                        limit=5
+                    )
+
+                    if fallback_results:
+                        logger.debug(f"Fallback search found {len(fallback_results)} results")
+                        results = fallback_results
+                    else:
+                        logger.warning(f"Both primary and fallback search returned no results for query: '{query}'")
+                        return f"No relevant memories found for query: '{query}'"
+
+                except Exception as fallback_e:
+                    logger.error(f"Fallback search also failed for query '{query}': {fallback_e}")
+                    return f"No relevant memories found for query: '{query}'"
 
             # Format results as a readable string
             formatted_output = f"🔍 Memory Search Results for: '{query}'\n\n"
@@ -307,6 +325,8 @@ class MemoryTool:
 
     def _get_stats(self, **kwargs) -> Dict[str, Any]:
         """Get memory and integration statistics"""
+        # kwargs can be used for future filtering options
+        _ = kwargs  # Mark as intentionally unused
         try:
             memory_stats = self.memori.get_memory_stats()
             integration_stats = self.memori.get_integration_stats()
@@ -362,6 +382,8 @@ class MemoryTool:
 
     def _trigger_analysis(self, **kwargs) -> Dict[str, Any]:
         """Trigger conscious agent analysis"""
+        # kwargs can be used for future analysis options
+        _ = kwargs  # Mark as intentionally unused
         try:
             if hasattr(self.memori, "trigger_conscious_analysis"):
                 self.memori.trigger_conscious_analysis()
