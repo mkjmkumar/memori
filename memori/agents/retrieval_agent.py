@@ -411,12 +411,16 @@ Be strategic and comprehensive in your search planning."""
 
         # This would need to be implemented in the database manager
         # For now, get all memories and filter by category
-        logger.debug(f"Searching memories by categories: {categories} in namespace: {namespace}")
+        logger.debug(
+            f"Searching memories by categories: {categories} in namespace: {namespace}"
+        )
         all_results = db_manager.search_memories(
             query="", namespace=namespace, limit=limit * 3
         )
 
-        logger.debug(f"Retrieved {len(all_results)} total results for category filtering")
+        logger.debug(
+            f"Retrieved {len(all_results)} total results for category filtering"
+        )
 
         filtered_results = []
         for i, result in enumerate(all_results):
@@ -429,7 +433,9 @@ Be strategic and comprehensive in your search planning."""
                 # Check processed_data field first
                 if "processed_data" in result and result["processed_data"]:
                     processed_data = result["processed_data"]
-                    logger.debug(f"Found processed_data: {type(processed_data)} - {str(processed_data)[:100]}...")
+                    logger.debug(
+                        f"Found processed_data: {type(processed_data)} - {str(processed_data)[:100]}..."
+                    )
 
                     # Handle both dict and JSON string formats
                     if isinstance(processed_data, str):
@@ -446,7 +452,7 @@ Be strategic and comprehensive in your search planning."""
                             ["category"],
                             ["primary_category"],
                             ["metadata", "category"],
-                            ["classification", "category"]
+                            ["classification", "category"],
                         ]
 
                         for path in category_paths:
@@ -456,12 +462,16 @@ Be strategic and comprehensive in your search planning."""
                                     temp_data = temp_data.get(key, {})
                                 if isinstance(temp_data, str) and temp_data:
                                     memory_category = temp_data
-                                    logger.debug(f"Found category via path {path}: {memory_category}")
+                                    logger.debug(
+                                        f"Found category via path {path}: {memory_category}"
+                                    )
                                     break
                             except (AttributeError, TypeError):
                                 continue
                     else:
-                        logger.debug(f"processed_data is not a dict after parsing: {type(processed_data)}")
+                        logger.debug(
+                            f"processed_data is not a dict after parsing: {type(processed_data)}"
+                        )
                         continue
 
                 # Fallback: check direct category field
@@ -471,12 +481,16 @@ Be strategic and comprehensive in your search planning."""
 
                 # Check if the found category matches any of our target categories
                 if memory_category:
-                    logger.debug(f"Comparing memory category '{memory_category}' against target categories {categories}")
+                    logger.debug(
+                        f"Comparing memory category '{memory_category}' against target categories {categories}"
+                    )
                     if memory_category in categories:
                         filtered_results.append(result)
                         logger.debug(f"✓ Category match found: {memory_category}")
                     else:
-                        logger.debug(f"✗ Category mismatch: {memory_category} not in {categories}")
+                        logger.debug(
+                            f"✗ Category mismatch: {memory_category} not in {categories}"
+                        )
                 else:
                     logger.debug("No category found in result")
 
@@ -484,7 +498,9 @@ Be strategic and comprehensive in your search planning."""
                 logger.debug(f"Error processing result {i+1}: {e}")
                 continue
 
-        logger.debug(f"Category filtering complete: {len(filtered_results)} results match categories {categories}")
+        logger.debug(
+            f"Category filtering complete: {len(filtered_results)} results match categories {categories}"
+        )
         return filtered_results[:limit]
 
     def _detect_structured_output_support(self) -> bool:

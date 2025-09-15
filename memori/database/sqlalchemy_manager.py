@@ -438,12 +438,17 @@ class SQLAlchemyDatabaseManager:
                 return None
 
             search_service = SearchService(session, self.database_type)
-            logger.debug(f"Created new search service instance for database type: {self.database_type}")
+            logger.debug(
+                f"Created new search service instance for database type: {self.database_type}"
+            )
             return search_service
 
         except Exception as e:
             logger.error(f"Failed to create search service: {e}")
-            logger.debug(f"Search service creation error: {type(e).__name__}: {str(e)}", exc_info=True)
+            logger.debug(
+                f"Search service creation error: {type(e).__name__}: {str(e)}",
+                exc_info=True,
+            )
             return None
 
     def store_chat_history(
@@ -582,7 +587,9 @@ class SQLAlchemyDatabaseManager:
         """Search memories using the cross-database search service"""
         search_service = None
         try:
-            logger.debug(f"Starting memory search for query '{query}' in namespace '{namespace}' with category_filter={category_filter}")
+            logger.debug(
+                f"Starting memory search for query '{query}' in namespace '{namespace}' with category_filter={category_filter}"
+            )
             search_service = self._get_search_service()
 
             if not search_service:
@@ -596,20 +603,26 @@ class SQLAlchemyDatabaseManager:
 
             # Validate results structure
             if not isinstance(results, list):
-                logger.warning(f"Search service returned unexpected type: {type(results)}, converting to list")
+                logger.warning(
+                    f"Search service returned unexpected type: {type(results)}, converting to list"
+                )
                 results = list(results) if results else []
 
             return results
 
         except Exception as e:
-            logger.error(f"Memory search failed for query '{query}' in namespace '{namespace}': {e}")
-            logger.debug(f"Search error details: {type(e).__name__}: {str(e)}", exc_info=True)
+            logger.error(
+                f"Memory search failed for query '{query}' in namespace '{namespace}': {e}"
+            )
+            logger.debug(
+                f"Search error details: {type(e).__name__}: {str(e)}", exc_info=True
+            )
             # Return empty list instead of raising exception to avoid breaking auto_ingest
             return []
 
         finally:
             # Ensure session is properly closed, even if an exception occurred
-            if search_service and hasattr(search_service, 'session'):
+            if search_service and hasattr(search_service, "session"):
                 try:
                     if search_service.session:
                         logger.debug("Closing search service session")

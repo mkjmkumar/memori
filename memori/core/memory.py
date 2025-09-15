@@ -1041,20 +1041,31 @@ class Memori:
 
             # Always try direct database search first as it's more reliable
             logger.debug("Auto-ingest: Using direct database search (primary method)")
-            logger.debug(f"Auto-ingest: Database manager type: {type(self.db_manager).__name__}")
+            logger.debug(
+                f"Auto-ingest: Database manager type: {type(self.db_manager).__name__}"
+            )
 
             try:
                 results = self.db_manager.search_memories(
                     query=user_input, namespace=self.namespace, limit=5
                 )
-                logger.debug(f"Auto-ingest: Database search returned {len(results) if results else 0} results")
+                logger.debug(
+                    f"Auto-ingest: Database search returned {len(results) if results else 0} results"
+                )
 
                 if results:
-                    for i, result in enumerate(results[:3]):  # Log first 3 results for debugging
-                        logger.debug(f"Auto-ingest: Result {i+1}: {type(result)} with keys: {list(result.keys()) if isinstance(result, dict) else 'N/A'}")
+                    for i, result in enumerate(
+                        results[:3]
+                    ):  # Log first 3 results for debugging
+                        logger.debug(
+                            f"Auto-ingest: Result {i+1}: {type(result)} with keys: {list(result.keys()) if isinstance(result, dict) else 'N/A'}"
+                        )
             except Exception as db_search_e:
                 logger.error(f"Auto-ingest: Database search failed: {db_search_e}")
-                logger.debug(f"Auto-ingest: Database search error details: {type(db_search_e).__name__}: {str(db_search_e)}", exc_info=True)
+                logger.debug(
+                    f"Auto-ingest: Database search error details: {type(db_search_e).__name__}: {str(db_search_e)}",
+                    exc_info=True,
+                )
                 results = []
 
             if results:
@@ -1100,7 +1111,10 @@ class Memori:
                     logger.error(
                         f"Auto-ingest: Search engine failed for query '{user_input[:50]}...': {search_error}"
                     )
-                    logger.debug(f"Auto-ingest: Search engine error details: {type(search_error).__name__}: {str(search_error)}", exc_info=True)
+                    logger.debug(
+                        f"Auto-ingest: Search engine error details: {type(search_error).__name__}: {str(search_error)}",
+                        exc_info=True,
+                    )
             else:
                 logger.debug("Auto-ingest: No search engine available")
 
@@ -1108,7 +1122,9 @@ class Memori:
             logger.debug(
                 "Auto-ingest: All search methods returned 0 results, using recent memories fallback"
             )
-            logger.debug(f"Auto-ingest: Attempting fallback search in namespace '{self.namespace}'")
+            logger.debug(
+                f"Auto-ingest: Attempting fallback search in namespace '{self.namespace}'"
+            )
 
             try:
                 fallback_results = self.db_manager.search_memories(
@@ -1116,7 +1132,9 @@ class Memori:
                     namespace=self.namespace,
                     limit=3,
                 )
-                logger.debug(f"Auto-ingest: Fallback search returned {len(fallback_results) if fallback_results else 0} results")
+                logger.debug(
+                    f"Auto-ingest: Fallback search returned {len(fallback_results) if fallback_results else 0} results"
+                )
 
                 if fallback_results:
                     logger.debug(
@@ -1133,7 +1151,10 @@ class Memori:
 
             except Exception as fallback_e:
                 logger.error(f"Auto-ingest: Fallback search failed: {fallback_e}")
-                logger.debug(f"Auto-ingest: Fallback error details: {type(fallback_e).__name__}: {str(fallback_e)}", exc_info=True)
+                logger.debug(
+                    f"Auto-ingest: Fallback error details: {type(fallback_e).__name__}: {str(fallback_e)}",
+                    exc_info=True,
+                )
 
             logger.debug(
                 "Auto-ingest: All retrieval methods failed, returning empty context"

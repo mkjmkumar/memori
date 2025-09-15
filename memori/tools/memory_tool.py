@@ -73,9 +73,12 @@ class MemoryTool:
 
         # Use retrieval agent for intelligent search
         try:
-            logger.debug(f"Attempting to import MemorySearchEngine for query: '{query}'")
+            logger.debug(
+                f"Attempting to import MemorySearchEngine for query: '{query}'"
+            )
             from ..agents.retrieval_agent import MemorySearchEngine
-            logger.debug(f"Successfully imported MemorySearchEngine")
+
+            logger.debug("Successfully imported MemorySearchEngine")
 
             # Create search engine if not already initialized
             if not hasattr(self, "_search_engine"):
@@ -98,38 +101,50 @@ class MemoryTool:
             )
 
             if not results:
-                logger.debug(f"Primary search returned no results for query: '{query}', trying fallback search")
+                logger.debug(
+                    f"Primary search returned no results for query: '{query}', trying fallback search"
+                )
                 # Try fallback direct database search
                 try:
                     fallback_results = self.memori.db_manager.search_memories(
-                        query=query,
-                        namespace=self.memori.namespace,
-                        limit=5
+                        query=query, namespace=self.memori.namespace, limit=5
                     )
 
                     if fallback_results:
-                        logger.debug(f"Fallback search found {len(fallback_results)} results")
+                        logger.debug(
+                            f"Fallback search found {len(fallback_results)} results"
+                        )
                         results = fallback_results
                     else:
-                        logger.warning(f"Both primary and fallback search returned no results for query: '{query}'")
+                        logger.warning(
+                            f"Both primary and fallback search returned no results for query: '{query}'"
+                        )
                         return f"No relevant memories found for query: '{query}'"
 
                 except Exception as fallback_e:
-                    logger.error(f"Fallback search also failed for query '{query}': {fallback_e}")
+                    logger.error(
+                        f"Fallback search also failed for query '{query}': {fallback_e}"
+                    )
                     return f"No relevant memories found for query: '{query}'"
 
             # Ensure we have results to format
             if not results:
-                logger.warning(f"No results available for formatting for query: '{query}'")
+                logger.warning(
+                    f"No results available for formatting for query: '{query}'"
+                )
                 return f"No relevant memories found for query: '{query}'"
 
             # Format results as a readable string
-            logger.debug(f"Starting to format {len(results)} results for query: '{query}'")
+            logger.debug(
+                f"Starting to format {len(results)} results for query: '{query}'"
+            )
             formatted_output = f"🔍 Memory Search Results for: '{query}'\n\n"
 
             for i, result in enumerate(results, 1):
                 try:
-                    logger.debug(f"Formatting result {i}: type={type(result)}, keys={list(result.keys()) if isinstance(result, dict) else 'not-dict'}")
+                    logger.debug(
+                        f"Formatting result {i}: type={type(result)}, keys={list(result.keys()) if isinstance(result, dict) else 'not-dict'}"
+                    )
 
                     # Try to parse processed data for better formatting
                     if "processed_data" in result:
@@ -174,38 +189,55 @@ class MemoryTool:
                     )[:100]
                     formatted_output += f"{i}. {content}...\n\n"
 
-            logger.debug(f"Successfully formatted results, output length: {len(formatted_output)}")
+            logger.debug(
+                f"Successfully formatted results, output length: {len(formatted_output)}"
+            )
             return formatted_output.strip()
 
         except ImportError as import_e:
-            logger.warning(f"Failed to import MemorySearchEngine for query '{query}': {import_e}")
+            logger.warning(
+                f"Failed to import MemorySearchEngine for query '{query}': {import_e}"
+            )
             # Fallback to original search methods if retrieval agent is not available
-            logger.debug(f"Using ImportError fallback search methods for query: '{query}'")
+            logger.debug(
+                f"Using ImportError fallback search methods for query: '{query}'"
+            )
 
             # Try different search strategies based on query content
             if any(word in query.lower() for word in ["name", "who am i", "about me"]):
-                logger.debug(f"Trying essential conversations for personal query: '{query}'")
+                logger.debug(
+                    f"Trying essential conversations for personal query: '{query}'"
+                )
                 # Personal information query - try essential conversations first
                 essential_result = self._get_essential_conversations()
                 if essential_result.get("count", 0) > 0:
-                    logger.debug(f"Essential conversations found {essential_result.get('count', 0)} results")
+                    logger.debug(
+                        f"Essential conversations found {essential_result.get('count', 0)} results"
+                    )
                     return self._format_dict_to_string(essential_result)
 
             # General search
             logger.debug(f"Trying general search for query: '{query}'")
             search_result = self._search_memories(query=query, limit=10)
-            logger.debug(f"General search returned results_count: {search_result.get('results_count', 0)}")
+            logger.debug(
+                f"General search returned results_count: {search_result.get('results_count', 0)}"
+            )
             if search_result.get("results_count", 0) > 0:
                 return self._format_dict_to_string(search_result)
 
             # Fallback to context retrieval
             logger.debug(f"Trying context retrieval fallback for query: '{query}'")
             context_result = self._retrieve_context(query=query, limit=5)
-            logger.debug(f"Context retrieval returned context_count: {context_result.get('context_count', 0)}")
+            logger.debug(
+                f"Context retrieval returned context_count: {context_result.get('context_count', 0)}"
+            )
             return self._format_dict_to_string(context_result)
 
         except Exception as e:
-            logger.error(f"Unexpected error in memory tool execute for query '{query}': {e}", exc_info=True)
+            logger.error(
+                f"Unexpected error in memory tool execute for query '{query}': {e}",
+                exc_info=True,
+            )
             return f"Error searching memories: {str(e)}"
 
     def _format_dict_to_string(self, result_dict: Dict[str, Any]) -> str:

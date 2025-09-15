@@ -41,7 +41,9 @@ class SearchService:
         Returns:
             List of memory dictionaries with search metadata
         """
-        logger.debug(f"SearchService.search_memories called - query: '{query}', namespace: '{namespace}', database: {self.database_type}, limit: {limit}")
+        logger.debug(
+            f"SearchService.search_memories called - query: '{query}', namespace: '{namespace}', database: {self.database_type}, limit: {limit}"
+        )
 
         if not query or not query.strip():
             logger.debug("Empty query provided, returning recent memories")
@@ -55,7 +57,9 @@ class SearchService:
         search_short_term = not memory_types or "short_term" in memory_types
         search_long_term = not memory_types or "long_term" in memory_types
 
-        logger.debug(f"Memory types to search - short_term: {search_short_term}, long_term: {search_long_term}, categories: {category_filter}")
+        logger.debug(
+            f"Memory types to search - short_term: {search_short_term}, long_term: {search_long_term}, categories: {category_filter}"
+        )
 
         try:
             # Try database-specific full-text search first
@@ -94,7 +98,9 @@ class SearchService:
 
             # If no results or full-text search failed, fall back to LIKE search
             if not results:
-                logger.debug("Primary search returned no results, falling back to LIKE search")
+                logger.debug(
+                    "Primary search returned no results, falling back to LIKE search"
+                )
                 results = self._search_like_fallback(
                     query,
                     namespace,
@@ -105,8 +111,13 @@ class SearchService:
                 )
 
         except Exception as e:
-            logger.error(f"Full-text search failed for query '{query}' in namespace '{namespace}': {e}")
-            logger.debug(f"Full-text search error details: {type(e).__name__}: {str(e)}", exc_info=True)
+            logger.error(
+                f"Full-text search failed for query '{query}' in namespace '{namespace}': {e}"
+            )
+            logger.debug(
+                f"Full-text search error details: {type(e).__name__}: {str(e)}",
+                exc_info=True,
+            )
             logger.warning(f"Falling back to LIKE search for query '{query}'")
             try:
                 results = self._search_like_fallback(
@@ -119,14 +130,20 @@ class SearchService:
                 )
                 logger.debug(f"LIKE fallback search returned {len(results)} results")
             except Exception as fallback_e:
-                logger.error(f"LIKE fallback search also failed for query '{query}': {fallback_e}")
+                logger.error(
+                    f"LIKE fallback search also failed for query '{query}': {fallback_e}"
+                )
                 results = []
 
         final_results = self._rank_and_limit_results(results, limit)
-        logger.debug(f"SearchService completed - returning {len(final_results)} final results after ranking and limiting")
+        logger.debug(
+            f"SearchService completed - returning {len(final_results)} final results after ranking and limiting"
+        )
 
         if final_results:
-            logger.debug(f"Top result: memory_id={final_results[0].get('memory_id')}, score={final_results[0].get('composite_score', 0):.3f}, strategy={final_results[0].get('search_strategy')}")
+            logger.debug(
+                f"Top result: memory_id={final_results[0].get('memory_id')}, score={final_results[0].get('composite_score', 0):.3f}, strategy={final_results[0].get('search_strategy')}"
+            )
 
         return final_results
 
@@ -141,14 +158,18 @@ class SearchService:
     ) -> List[Dict[str, Any]]:
         """Search using SQLite FTS5"""
         try:
-            logger.debug(f"SQLite FTS search starting for query: '{query}' in namespace: '{namespace}'")
+            logger.debug(
+                f"SQLite FTS search starting for query: '{query}' in namespace: '{namespace}'"
+            )
 
             # Use parameters to validate search scope
             if not search_short_term and not search_long_term:
                 logger.debug("No memory types specified for search, defaulting to both")
                 search_short_term = search_long_term = True
 
-            logger.debug(f"Search scope - short_term: {search_short_term}, long_term: {search_long_term}")
+            logger.debug(
+                f"Search scope - short_term: {search_short_term}, long_term: {search_long_term}"
+            )
 
             # Build FTS query
             fts_query = f'"{query.strip()}"'
@@ -216,13 +237,20 @@ class SearchService:
 
             # Log details of first result for debugging
             if rows:
-                logger.debug(f"Sample result: memory_id={rows[0].get('memory_id')}, type={rows[0].get('memory_type')}, score={rows[0].get('search_score')}")
+                logger.debug(
+                    f"Sample result: memory_id={rows[0].get('memory_id')}, type={rows[0].get('memory_type')}, score={rows[0].get('search_score')}"
+                )
 
             return rows
 
         except Exception as e:
-            logger.error(f"SQLite FTS5 search failed for query '{query}' in namespace '{namespace}': {e}")
-            logger.debug(f"SQLite FTS5 error details: {type(e).__name__}: {str(e)}", exc_info=True)
+            logger.error(
+                f"SQLite FTS5 search failed for query '{query}' in namespace '{namespace}': {e}"
+            )
+            logger.debug(
+                f"SQLite FTS5 error details: {type(e).__name__}: {str(e)}",
+                exc_info=True,
+            )
             # Roll back the transaction to recover from error state
             self.session.rollback()
             return []
@@ -241,8 +269,12 @@ class SearchService:
 
         try:
             # Apply limit proportionally between memory types
-            short_limit = limit // 2 if search_short_term and search_long_term else limit
-            long_limit = limit - short_limit if search_short_term and search_long_term else limit
+            short_limit = (
+                limit // 2 if search_short_term and search_long_term else limit
+            )
+            long_limit = (
+                limit - short_limit if search_short_term and search_long_term else limit
+            )
 
             # Search short-term memory if requested
             if search_short_term:
@@ -309,8 +341,13 @@ class SearchService:
             return results
 
         except Exception as e:
-            logger.error(f"MySQL FULLTEXT search failed for query '{query}' in namespace '{namespace}': {e}")
-            logger.debug(f"MySQL FULLTEXT error details: {type(e).__name__}: {str(e)}", exc_info=True)
+            logger.error(
+                f"MySQL FULLTEXT search failed for query '{query}' in namespace '{namespace}': {e}"
+            )
+            logger.debug(
+                f"MySQL FULLTEXT error details: {type(e).__name__}: {str(e)}",
+                exc_info=True,
+            )
             # Roll back the transaction to recover from error state
             self.session.rollback()
             return []
@@ -329,8 +366,12 @@ class SearchService:
 
         try:
             # Apply limit proportionally between memory types
-            short_limit = limit // 2 if search_short_term and search_long_term else limit
-            long_limit = limit - short_limit if search_short_term and search_long_term else limit
+            short_limit = (
+                limit // 2 if search_short_term and search_long_term else limit
+            )
+            long_limit = (
+                limit - short_limit if search_short_term and search_long_term else limit
+            )
 
             # Prepare query for tsquery - handle spaces and special characters
             # Convert simple query to tsquery format (join words with &)
@@ -362,7 +403,9 @@ class SearchService:
                         ).params(query=tsquery_text),
                         text("'short_term' as memory_type"),
                         text("'postgresql_fts' as search_strategy"),
-                    ).order_by(text("search_score DESC")).limit(short_limit)
+                    )
+                    .order_by(text("search_score DESC"))
+                    .limit(short_limit)
                 ).fetchall()
 
                 results.extend([dict(row) for row in short_results])
@@ -393,7 +436,9 @@ class SearchService:
                         ).params(query=tsquery_text),
                         text("'long_term' as memory_type"),
                         text("'postgresql_fts' as search_strategy"),
-                    ).order_by(text("search_score DESC")).limit(long_limit)
+                    )
+                    .order_by(text("search_score DESC"))
+                    .limit(long_limit)
                 ).fetchall()
 
                 results.extend([dict(row) for row in long_results])
@@ -401,8 +446,13 @@ class SearchService:
             return results
 
         except Exception as e:
-            logger.error(f"PostgreSQL FTS search failed for query '{query}' in namespace '{namespace}': {e}")
-            logger.debug(f"PostgreSQL FTS error details: {type(e).__name__}: {str(e)}", exc_info=True)
+            logger.error(
+                f"PostgreSQL FTS search failed for query '{query}' in namespace '{namespace}': {e}"
+            )
+            logger.debug(
+                f"PostgreSQL FTS error details: {type(e).__name__}: {str(e)}",
+                exc_info=True,
+            )
             # Roll back the transaction to recover from error state
             self.session.rollback()
             return []
@@ -417,7 +467,9 @@ class SearchService:
         search_long_term: bool,
     ) -> List[Dict[str, Any]]:
         """Fallback LIKE-based search with improved flexibility"""
-        logger.debug(f"Starting LIKE fallback search for query: '{query}' in namespace: '{namespace}'")
+        logger.debug(
+            f"Starting LIKE fallback search for query: '{query}' in namespace: '{namespace}'"
+        )
         results = []
 
         # Create multiple search patterns for better matching
@@ -439,10 +491,12 @@ class SearchService:
             # Build OR conditions for all search patterns
             search_conditions = []
             for pattern in search_patterns:
-                search_conditions.extend([
-                    ShortTermMemory.searchable_content.like(pattern),
-                    ShortTermMemory.summary.like(pattern),
-                ])
+                search_conditions.extend(
+                    [
+                        ShortTermMemory.searchable_content.like(pattern),
+                        ShortTermMemory.summary.like(pattern),
+                    ]
+                )
 
             short_query = self.session.query(ShortTermMemory).filter(
                 and_(
@@ -486,10 +540,12 @@ class SearchService:
             # Build OR conditions for all search patterns
             search_conditions = []
             for pattern in search_patterns:
-                search_conditions.extend([
-                    LongTermMemory.searchable_content.like(pattern),
-                    LongTermMemory.summary.like(pattern),
-                ])
+                search_conditions.extend(
+                    [
+                        LongTermMemory.searchable_content.like(pattern),
+                        LongTermMemory.summary.like(pattern),
+                    ]
+                )
 
             long_query = self.session.query(LongTermMemory).filter(
                 and_(
@@ -528,7 +584,9 @@ class SearchService:
                 }
                 results.append(memory_dict)
 
-        logger.debug(f"LIKE fallback search completed, returning {len(results)} total results")
+        logger.debug(
+            f"LIKE fallback search completed, returning {len(results)} total results"
+        )
         return results
 
     def _get_recent_memories(
