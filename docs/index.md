@@ -3,15 +3,25 @@
 ## Open-Source Memory Engine for LLMs, AI Agents & Multi-Agent Systems
 
 !!! tip "Philosophy"
-    **Second-memory for all your LLM work** - Never repeat context again. Simple, reliable architecture that just works out of the box.
+    **Second human brain for AI** - Never repeat context again and save 90% tokens. Simple, reliable architecture that just works out of the box with any relational databases.
+
+
+## What is Memori?
+
+**Memori** is an open-source memory layer to give your AI agents human-like memory. It remembers what matters, promotes what's essential, and injects structured context intelligently into LLM conversations.
 
 ## Why Memori?
+
+Memomi uses multi-agents working together to intelligently promote essential long-term memories to short-term storage for faster context injection.
 
 Give your AI agents structured, persistent memory with professional-grade architecture:
 
 ```python
 # Before: Repeating context every time
-response = completion(
+from openai import OpenAI
+client = OpenAI()
+
+response = client.chat.completions.create(
     model="gpt-4",
     messages=[
         {"role": "system", "content": "You are a Python expert..."},
@@ -27,80 +37,24 @@ memori = Memori(openai_api_key="your-key")
 memori.enable()  # Auto-records ALL LLM conversations
 
 # Context automatically injected from memory
-response = completion(
+response = client.chat.completions.create(
     model="gpt-4", 
     messages=[{"role": "user", "content": "Help me with authentication"}]
 )
 ```
 
-## ✨ Key Features
+## Key Features
 
-- **🎯 Universal Integration**: Works with ANY LLM library (LiteLLM, OpenAI, Anthropic)
-- **🧠 Intelligent Processing**: Pydantic-based memory with entity extraction
-- **🔄 Auto-Context Injection**: Relevant memories automatically added to conversations  
-- **📊 Multiple Memory Types**: Short-term, long-term, rules, and entity relationships
-- **🔍 Advanced Search**: Full-text search with semantic ranking
-- **⚙️ Production-Ready**: Comprehensive error handling, logging, and configuration
-- **🗄️ Database Support**: SQLite, PostgreSQL, MySQL
-- **🛡️ Type Safety**: Full Pydantic validation and type checking
+- **Universal Integration**: Works with ANY LLM library (LiteLLM, OpenAI, Anthropic)
+- **Intelligent Processing**: Pydantic-based memory with entity extraction
+- **Auto-Context Injection**: Relevant memories automatically added to conversations  
+- **Multiple Memory Types**: Short-term, long-term, rules, and entity relationships
+- **Advanced Search**: Full-text search with semantic ranking
+- **Production-Ready**: Comprehensive error handling, logging, and configuration
+- **Database Support**: SQLite, PostgreSQL, MySQL
+- **Type Safety**: Full Pydantic validation and type checking
 
-## 🚀 Quick Start
-
-### Installation
-
-```bash
-pip install memorisdk
-```
-
-### Basic Usage with LiteLLM
-
-Install LiteLLM:
-
-```bash
-pip install litellm
-```
-
-Set OpenAI API Key:
-
-```bash
-export OPENAI_API_KEY="sk-your-openai-key-here"
-```
-
-Run the following Python script:
-
-```python
-from memori import Memori
-from litellm import completion
-
-# Initialize memory
-memori = Memori(conscious_ingest=True)
-memori.enable()
-
-print("=== First Conversation - Establishing Context ===")
-response1 = completion(
-    model="gpt-4o-mini",
-    messages=[{
-        "role": "user", 
-        "content": "I'm working on a Python FastAPI project"
-    }]
-)
-
-print("Assistant:", response1.choices[0].message.content)
-print("\n" + "="*50)
-print("=== Second Conversation - Memory Provides Context ===")
-
-response2 = completion(
-    model="gpt-4o-mini", 
-    messages=[{
-        "role": "user",
-        "content": "Help me add user authentication"
-    }]
-)
-print("Assistant:", response2.choices[0].message.content)
-print("\n💡 Notice: Memori automatically knows about your FastAPI Python project!")
-```
-
-## 📋 Memory Types
+## Memory Types
 
 | Type | Purpose | Retention | Use Case |
 |------|---------|-----------|----------|
@@ -109,21 +63,31 @@ print("\n💡 Notice: Memori automatically knows about your FastAPI Python proje
 | **Rules** | User preferences/constraints | Permanent | "I prefer Python", "Use pytest" |
 | **Entities** | People, projects, technologies | Tracked | Relationship mapping |
 
-## 🔌 Universal Integration
+## Quick Start
+
+Get started with Memori in minutes! Follow our easy quick start guide:
+
+**[Quick Start Guide](getting-started/quick-start.md)**
+
+Learn how to install Memori, set up your first memory-enabled agent, and see the magic of automatic context injection in action.
+
+## Universal Integration
 
 Works with **ANY** LLM library:
+
+**[See all supported LLMs](open-source/llms/overview.md)**
 
 ```python
 memori.enable()  # Enable universal recording
 
-# LiteLLM (recommended)
+# OpenAI (recommended)
+from openai import OpenAI
+client = OpenAI()
+client.chat.completions.create(...)
+
+# LiteLLM
 from litellm import completion
 completion(model="gpt-4", messages=[...])
-
-# OpenAI
-import openai
-client = openai.OpenAI()
-client.chat.completions.create(...)
 
 # Anthropic  
 import anthropic
@@ -133,38 +97,29 @@ client.messages.create(...)
 # All automatically recorded and contextualized!
 ```
 
-## 🔧 Configuration
+## Multiple Database Support
 
-### Simple Setup
-```python
-from memori import Memori
+Supports multiple relational databases for production-ready memory storage:
 
-memori = Memori(
-    database_connect="sqlite:///my_memory.db",
-    conscious_ingest=True,
-    openai_api_key="sk-..."
-)
-```
+**[Database Configuration Guide](open-source/databases/overview.md)**
 
-### Advanced Configuration
-```python
-from memori import ConfigManager
+## Framework Integrations
 
-# Load from memori.json or environment
-config = ConfigManager()
-config.auto_load()
+Seamlessly integrates with popular AI agent frameworks and tools:
 
-memori = Memori()
-memori.enable()
-```
+**[View All Integrations](integrations/overview.md)**
 
-## 📚 Next Steps
+## Multi-Agent Architecture
 
-- [Installation Guide](getting-started/installation.md) - Detailed setup instructions
-- [Quick Start](getting-started/quick-start.md) - Get running in 5 minutes  
-- [Basic Usage](getting-started/basic-usage.md) - Core concepts and examples
-- [Configuration](configuration/settings.md) - Production setup
-- [Examples](https://github.com/GibsonAI/memori/tree/main/examples) - Real-world use cases
+Learn about Memori's intelligent multi-agent system that powers memory processing:
+
+**[Understanding Memori Agents](core-concepts/agents.md)**
+
+## Configuration
+
+Learn more about advanced configuration options:
+
+**[Configuration Settings Guide](configuration/settings.md)**
 
 ---
 

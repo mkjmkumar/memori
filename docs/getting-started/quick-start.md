@@ -1,11 +1,11 @@
 # Quick Start
 
-Get Memori running in 3 minutes.
+Get Memori running in less than a minute.
 
 ## 1. Install
 
 ```bash
-pip install memorisdk litellm
+pip install memorisdk openai
 ```
 
 ## 2. Set API Key
@@ -20,14 +20,17 @@ Create `demo.py`:
 
 ```python
 from memori import Memori
-from litellm import completion
+from openai import OpenAI
+
+# Initialize OpenAI client
+openai_client = OpenAI()
 
 # Initialize memory
 memori = Memori(conscious_ingest=True)
 memori.enable()
 
 # First conversation - establish context
-response1 = completion(
+response1 = openai_client.chat.completions.create(
     model="gpt-4o-mini",
     messages=[{
         "role": "user", 
@@ -37,7 +40,7 @@ response1 = completion(
 print("Assistant:", response1.choices[0].message.content)
 
 # Second conversation - memory provides context  
-response2 = completion(
+response2 = openai_client.chat.completions.create(
     model="gpt-4o-mini", 
     messages=[{
         "role": "user",
@@ -65,12 +68,6 @@ python demo.py
 2. **Intelligent Processing**: Extracts entities (Python, FastAPI, projects) and categorizes memories
 3. **Context Injection**: Second conversation automatically includes relevant memories
 4. **Persistent Storage**: All memories stored in SQLite database for future sessions
-
-## Next Steps
-
-- [Basic Usage](basic-usage.md) - Learn core concepts
-- [Configuration](../configuration/settings.md) - Customize for your needs
-- [Examples](https://github.com/GibsonAI/memori/tree/main/examples) - Explore more examples
 
 !!! tip "Pro Tip"
     Try asking the same questions in a new session - Memori will remember your project context!
