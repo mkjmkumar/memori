@@ -1,7 +1,7 @@
 site_name: Memori
 site_description: The Open-Source Memory Layer for AI Agents & Multi-Agent Systems
 site_author: Harshal More
-site_url: https://memori.gibsonai.com/
+site_url: https://GibsonAI.github.io/memori
 
 repo_name: memori
 repo_url: https://github.com/GibsonAI/memori
@@ -59,43 +59,27 @@ markdown_extensions:
       permalink: true
 
 nav:
-  - Introduction: index.md
+  - Home: index.md
   - Getting Started:
-    - Quick Start: getting-started/quick-start.md
     - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quick-start.md
     - Basic Usage: getting-started/basic-usage.md
-  - Open Source:
-    - Features: open-source/features.md
-    - Architecture: open-source/architecture.md
-    - Databases:
-      - Overview: open-source/databases/overview.md
-    - LLMs:
-      - Overview: open-source/llms/overview.md
-      - Configurations: open-source/llms/configurations.md
+  - Features: features.md
+  - Architecture: architecture.md
   - Configuration:
     - Settings: configuration/settings.md
     - Database Setup: configuration/database.md
-    - Providers: configuration/providers.md
-  - Core Concepts:
-    - Overview: core-concepts/overview.md
-    - Agents: core-concepts/agents.md
-  - Integrations:
-    - Overview: integrations/overview.md
+  - Conscious Ingestion:
+    - Overview: conscious-ingestion/overview.md
+    - Agents: conscious-ingestion/agents.md
   - Examples:
-    - Overview: examples/overview.md
     - Basic Usage: examples/basic-usage.md
   - Contributing: contributing.md
 
 extra:
   social:
-    - icon: fontawesome/solid/globe
-      link: https://memori.gibsonai.com/
-      name: Memori Website
     - icon: fontawesome/brands/github
-      link: https://github.com/GibsonAI/memori
-    - icon: fontawesome/brands/discord
-      link: https://www.gibsonai.com/discord
-      name: Discord Community
+      link: https://github.com/yourusername/memori
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/memorisdk/
 

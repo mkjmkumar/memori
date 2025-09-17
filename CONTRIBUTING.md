@@ -1,18 +1,16 @@
-# Contributing t## 🛠️ Development Setup Memori
+# Contributing to Memori
 
-We welcome contributions to Memori! This document provides guidelines for contributing to the projec## 🐛 Bug Reports
+We welcome contributions to Memori! This document provides guidelines for contributing to the project.
 
-When reporting bugs, please include:
-## 🚀 Quick Start## 🚀 Re## 👥 Community
+## <� Quick Start
 
-- **Be respectful** and inclusivese Process
 1. **Fork** the repository
 2. **Clone** your fork: `git clone https://github.com/YOUR_USERNAME/memori.git`
 3. **Create** a branch: `git checkout -b feature/your-feature-name`
 4. **Install** development dependencies: `pip install -e ".[dev]"`
 5. **Make** your changes
 6. **Test** your changes: `pytest`
-7. **Format** your code: `black memori/ tests/` and `ruff check memori/ tests/ --fix`
+7. **Format** your code: `black memorisdk/ tests/` and `ruff check memorisdk/ tests/ --fix`
 8. **Commit** and **push** your changes
 9. **Create** a pull request
 
@@ -47,13 +45,13 @@ pre-commit install
 pytest
 
 # Run with coverage
-pytest --cov=memori --cov-report=html
+pytest --cov=memorisdk --cov-report=html
 
 # Run specific test file
 pytest tests/test_basic_functionality.py
 
-# Run integration tests (if available)
-pytest tests/integration/ -m integration
+# Run integration tests
+pytest tests/integration/
 ```
 
 ### Code Quality
@@ -62,21 +60,21 @@ We use several tools to maintain code quality:
 
 ```bash
 # Format code
-black memori/ tests/ examples/ scripts/
-isort memori/ tests/ examples/ scripts/
+black memorisdk/ tests/ examples/ scripts/
+isort memorisdk/ tests/ examples/ scripts/
 
 # Lint code
-ruff check memori/ tests/ examples/ scripts/
+ruff check memorisdk/ tests/ examples/ scripts/
 
 # Type checking
-mypy memori/
+mypy memorisdk/
 
 # Security checks
-bandit -r memori/
+bandit -r memorisdk/
 safety check
 ```
 
-## 📋 Contribution Guidelines
+## =� Contribution Guidelines
 
 ### Code Style
 
@@ -167,7 +165,7 @@ When reporting bugs, please include:
 
 Use the bug report template when creating issues.
 
-## 💡 Feature Requests
+## =� Feature Requests
 
 When suggesting new features:
 
@@ -179,7 +177,7 @@ When suggesting new features:
 
 Use the feature request template when creating issues.
 
-## 🏗️ Development Guidelines
+## =' Development Guidelines
 
 ### Architecture Principles
 
@@ -207,7 +205,7 @@ When adding new features:
 
 When modifying database schemas:
 
-1. **Create migration files** in `memori/database/migrations/`
+1. **Create migration files** in `memorisdk/database/migrations/`
 2. **Test migrations** on sample data
 3. **Document migration steps**
 4. **Consider rollback procedures**
@@ -241,14 +239,13 @@ Releases are managed by maintainers:
 
 - **GitHub Discussions**: For questions and general discussion
 - **GitHub Issues**: For bug reports and feature requests
-- **Discord**: Join our community at https://www.gibsonai.com/discord
 - **Documentation**: Check docs for common questions
 
-## 📄 License
+## =� License
 
 By contributing to Memori, you agree that your contributions will be licensed under the Apache License 2.0.
 
-## 🏆 Recognition
+## =O Recognition
 
 Contributors will be recognized in:
 - `CHANGELOG.md` for their contributions

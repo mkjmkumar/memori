@@ -1,5 +1,5 @@
 """
-Personal Assistant with Memori
+Personal Assistant with Memori v1.1
 AI assistant with conscious ingestion and intelligent memory
 """
 
@@ -12,7 +12,7 @@ load_dotenv()
 
 
 def main():
-    print("🤖 Personal Assistant with Conscious Memory")
+    print("🤖 Personal Assistant with Conscious Memory v1.1")
     print("=" * 50)
 
     # Create personal memory space with conscious ingestion
