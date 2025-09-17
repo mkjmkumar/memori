@@ -5,11 +5,13 @@ Professional-grade memory layer with comprehensive error handling, configuration
 management, and modular architecture for production AI systems.
 """
 
-__version__ = "2.0.0"
+__version__ = "1.0.0"
 __author__ = "Harshal More"
 __email__ = "harshalmore2468@gmail.com"
 
-from typing import Any, Optional
+# Memory agents
+from .agents.memory_agent import MemoryAgent
+from .agents.retrieval_agent import MemorySearchEngine
 
 # Configuration system
 from .config import (
@@ -70,22 +72,7 @@ from .utils import (  # Pydantic models; Enhanced exceptions; Validators and hel
     get_logger,
 )
 
-# Memory agents (dynamically imported to avoid import errors)
-MemoryAgent: Optional[Any] = None
-MemorySearchEngine: Optional[Any] = None
-_AGENTS_AVAILABLE = False
-
-try:
-    from .agents.memory_agent import MemoryAgent
-    from .agents.retrieval_agent import MemorySearchEngine
-
-    _AGENTS_AVAILABLE = True
-except ImportError:
-    # Agents are not available, use placeholder None values
-    pass
-
-# Build __all__ list dynamically based on available components
-_all_components = [
+__all__ = [
     # Core
     "Memori",
     "DatabaseManager",
@@ -95,6 +82,9 @@ _all_components = [
     "AgentSettings",
     "LoggingSettings",
     "ConfigManager",
+    # Agents
+    "MemoryAgent",
+    "MemorySearchEngine",
     # Database
     "SQLiteConnector",
     "PostgreSQLConnector",
@@ -148,9 +138,3 @@ _all_components = [
     "LoggingManager",
     "get_logger",
 ]
-
-# Add agents only if available
-if _AGENTS_AVAILABLE:
-    _all_components.extend(["MemoryAgent", "MemorySearchEngine"])
-
-__all__ = _all_components
