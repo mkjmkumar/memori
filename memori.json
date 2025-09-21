@@ -1,0 +1,49 @@
+{
+  "database": {
+    "connection_string": "postgresql://mukesh:admin@host.docker.internal:5432/mike_memory_db",
+    "database_type": "postgresql",
+    "pool_size": 10
+  },
+  "agents": {
+    "openai_api_key": "sk-your-openai-api-key-here",
+    "default_model": "gpt-4o",
+    "fallback_model": "gpt-3.5-turbo",
+    "max_tokens": 4000,
+    "temperature": 0.1,
+    "timeout_seconds": 60,
+    "retry_attempts": 3,
+    "conscious_ingest": true,
+    "auto_ingest": true
+  },
+  "memory": {
+    "namespace": "demo",
+    "shared_memory": false,
+    "retention_policy": "30_days",
+    "auto_cleanup": true,
+    "cleanup_interval_hours": 24,
+    "importance_threshold": 0.3,
+    "max_short_term_memories": 1000,
+    "max_long_term_memories": 10000,
+    "context_injection": true,
+    "context_limit": 5
+  },
+  "integrations": {
+    "litellm_enabled": true,
+    "openai_wrapper_enabled": false,
+    "anthropic_wrapper_enabled": false,
+    "auto_enable_on_import": true,
+    "callback_timeout": 10
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+    "log_to_file": false,
+    "log_file_path": "logs/memori.log",
+    "log_rotation": "10 MB",
+    "log_retention": "30 days",
+    "structured_logging": false
+  },
+  "version": "1.0.0",
+  "debug": false,
+  "verbose": true
+}

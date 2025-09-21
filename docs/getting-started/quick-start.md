@@ -14,6 +14,8 @@ pip install memorisdk openai
 export OPENAI_API_KEY="sk-your-openai-key-here"
 ```
 
+**🔐 Security Note:** Never commit API keys to version control. Use environment variables or create a `.env` file (see `.env.example` for all configuration options).
+
 ## 3. Basic Usage
 
 Create `demo.py`:

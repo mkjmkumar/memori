@@ -1,0 +1,250 @@
+{
+  "project_name": "YOUR_PROJECT_NAME",
+  "modules": {
+    "data_ingestion": {
+      "name": "data_ingestion",
+      "category": "core",
+      "priority": "critical",
+      "description": "Handles incoming data from various sources",
+      "files": [
+        "src/data_ingestion/*.py",
+        "docs/data_ingestion.md"
+      ],
+      "dependencies": [
+        "database_connector",
+        "data_validator"
+      ],
+      "api_endpoints": [
+        "/api/v1/data/upload",
+        "/api/v1/data/validate"
+      ],
+      "configuration": {
+        "batch_size": 1000,
+        "timeout": 30
+      }
+    },
+    "data_processing": {
+      "name": "data_processing",
+      "category": "core",
+      "priority": "critical",
+      "description": "Processes and transforms raw data",
+      "files": [
+        "src/data_processing/*.py"
+      ],
+      "dependencies": [
+        "data_ingestion",
+        "model_training"
+      ],
+      "api_endpoints": [
+        "/api/v1/process/batch"
+      ],
+      "configuration": {
+        "parallel_workers": 4
+      }
+    },
+    "model_training": {
+      "name": "model_training",
+      "category": "core",
+      "priority": "critical",
+      "description": "ML model training and evaluation",
+      "files": [
+        "src/model_training/*.py"
+      ],
+      "dependencies": [
+        "data_processing"
+      ],
+      "api_endpoints": [
+        "/api/v1/models/train"
+      ],
+      "configuration": {
+        "gpu_enabled": true
+      }
+    },
+    "prediction_engine": {
+      "name": "prediction_engine",
+      "category": "core",
+      "priority": "critical",
+      "description": "Real-time prediction serving",
+      "files": [
+        "src/prediction_engine/*.py"
+      ],
+      "dependencies": [
+        "model_training"
+      ],
+      "api_endpoints": [
+        "/api/v1/predict"
+      ],
+      "configuration": {
+        "model_cache_size": 100
+      }
+    },
+    "user_management": {
+      "name": "user_management",
+      "category": "services",
+      "priority": "high",
+      "description": "User account and profile management",
+      "files": [
+        "src/services/user_service.py"
+      ],
+      "dependencies": [
+        "database_connector"
+      ],
+      "api_endpoints": [
+        "/api/v1/users"
+      ],
+      "configuration": {
+        "session_timeout": 3600
+      }
+    },
+    "authentication": {
+      "name": "authentication",
+      "category": "services",
+      "priority": "high",
+      "description": "Authentication and authorization",
+      "files": [
+        "src/services/auth_service.py"
+      ],
+      "dependencies": [],
+      "api_endpoints": [
+        "/api/v1/auth/login"
+      ],
+      "configuration": {
+        "jwt_secret": "your-secret-key"
+      }
+    },
+    "notification_service": {
+      "name": "notification_service",
+      "category": "services",
+      "priority": "medium",
+      "description": "Email and SMS notifications",
+      "files": [
+        "src/services/notification_service.py"
+      ],
+      "dependencies": [
+        "user_management"
+      ],
+      "api_endpoints": [
+        "/api/v1/notifications"
+      ],
+      "configuration": {
+        "email_provider": "sendgrid"
+      }
+    },
+    "monitoring_service": {
+      "name": "monitoring_service",
+      "category": "services",
+      "priority": "medium",
+      "description": "System monitoring and metrics",
+      "files": [
+        "src/services/monitoring_service.py"
+      ],
+      "dependencies": [],
+      "api_endpoints": [
+        "/api/v1/metrics"
+      ],
+      "configuration": {
+        "metrics_retention_days": 90
+      }
+    },
+    "api_gateway": {
+      "name": "api_gateway",
+      "category": "integration",
+      "priority": "high",
+      "description": "Main API entry point",
+      "files": [
+        "src/integration/api_gateway.py"
+      ],
+      "dependencies": [
+        "user_management",
+        "data_processing"
+      ],
+      "api_endpoints": [
+        "/api/v1/*"
+      ],
+      "configuration": {
+        "rate_limiting": true
+      }
+    },
+    "database_connector": {
+      "name": "database_connector",
+      "category": "integration",
+      "priority": "critical",
+      "description": "Database connections and queries",
+      "files": [
+        "src/integration/database_connector.py"
+      ],
+      "dependencies": [],
+      "api_endpoints": [],
+      "configuration": {
+        "connection_pool_size": 10
+      }
+    },
+    "deployment_manager": {
+      "name": "deployment_manager",
+      "category": "deployment",
+      "priority": "medium",
+      "description": "Application deployment and orchestration",
+      "files": [
+        "src/deployment/deployment_manager.py"
+      ],
+      "dependencies": [],
+      "api_endpoints": [],
+      "configuration": {
+        "deployment_strategy": "rolling_update"
+      }
+    },
+    "configuration_manager": {
+      "name": "configuration_manager",
+      "category": "deployment",
+      "priority": "high",
+      "description": "Application configuration management",
+      "files": [
+        "src/deployment/config_manager.py"
+      ],
+      "dependencies": [],
+      "api_endpoints": [],
+      "configuration": {
+        "config_source": "database"
+      }
+    },
+    "data_validator": {
+      "name": "data_validator",
+      "category": "utilities",
+      "priority": "high",
+      "description": "Data validation utilities",
+      "files": [
+        "src/utilities/data_validator.py"
+      ],
+      "dependencies": [],
+      "api_endpoints": [],
+      "configuration": {
+        "validation_mode": "strict"
+      }
+    },
+    "error_handler": {
+      "name": "error_handler",
+      "category": "utilities",
+      "priority": "medium",
+      "description": "Error handling and logging utilities",
+      "files": [
+        "src/utilities/error_handler.py"
+      ],
+      "dependencies": [],
+      "api_endpoints": [],
+      "configuration": {
+        "log_level": "INFO"
+      }
+    }
+  },
+  "base_namespace": "your_project_name",
+  "memory_modes": {
+    "conscious_ingest": true,
+    "auto_ingest": true
+  },
+  "retention_policies": {
+    "critical": "permanent",
+    "high": "2_years",
+    "medium": "1_year",
+    "low": "6_months"
+  }
+}

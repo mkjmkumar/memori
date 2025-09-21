@@ -1,0 +1,265 @@
+{
+  "project_name": "Video Processor - Operational Video Manual Generation",
+  "description": "AI-powered system for creating operational user manuals from videos with integrated rule checking",
+  "base_namespace": "video_processor",
+  "modules": {
+    "video_input": {
+      "name": "video_input",
+      "category": "core",
+      "priority": "critical",
+      "description": "Video upload, validation, and initial processing module",
+      "files": [
+        "video_processor/video_input/*.py",
+        "docs/video_input.md"
+      ],
+      "dependencies": [
+        "video_storage",
+        "frame_extraction"
+      ],
+      "api_endpoints": [
+        "/api/v1/video/upload",
+        "/api/v1/video/validate"
+      ],
+      "configuration": {
+        "supported_formats": ["MP4", "AVI", "MOV"],
+        "max_file_size": "2GB",
+        "validation_rules": "video_format_check"
+      }
+    },
+    "frame_extraction": {
+      "name": "frame_extraction",
+      "category": "core",
+      "priority": "critical",
+      "description": "Computer vision-based key frame extraction from videos",
+      "files": [
+        "video_processor/frame_extraction/*.py"
+      ],
+      "dependencies": [
+        "video_input",
+        "ocr_processing"
+      ],
+      "api_endpoints": [
+        "/api/v1/video/extract-frames"
+      ],
+      "configuration": {
+        "extraction_method": "opencv",
+        "frame_rate": "1fps",
+        "quality_threshold": "0.8"
+      }
+    },
+    "ocr_processing": {
+      "name": "ocr_processing",
+      "category": "core",
+      "priority": "critical",
+      "description": "Advanced OCR processing to convert frame images to text",
+      "files": [
+        "video_processor/ocr_processing/*.py"
+      ],
+      "dependencies": [
+        "frame_extraction",
+        "llm_processing"
+      ],
+      "api_endpoints": [
+        "/api/v1/ocr/process"
+      ],
+      "configuration": {
+        "ocr_engine": "pytesseract",
+        "languages": ["eng", "jpn"],
+        "accuracy_threshold": "0.95"
+      }
+    },
+    "llm_processing": {
+      "name": "llm_processing",
+      "category": "core",
+      "priority": "critical",
+      "description": "AI-powered content generation and structuring using OpenAI GPT",
+      "files": [
+        "video_processor/llm_processing/*.py"
+      ],
+      "dependencies": [
+        "ocr_processing",
+        "chain_of_thought"
+      ],
+      "api_endpoints": [
+        "/api/v1/llm/generate"
+      ],
+      "configuration": {
+        "model": "gpt-4o",
+        "temperature": "0.3",
+        "max_tokens": "4000"
+      }
+    },
+    "chain_of_thought": {
+      "name": "chain_of_thought",
+      "category": "core",
+      "priority": "high",
+      "description": "Deduplication and semantic analysis with chain-of-thought reasoning",
+      "files": [
+        "video_processor/chain_of_thought/*.py"
+      ],
+      "dependencies": [
+        "llm_processing",
+        "rule_application"
+      ],
+      "api_endpoints": [
+        "/api/v1/chain/analyze"
+      ],
+      "configuration": {
+        "deduplication_method": "semantic_similarity",
+        "similarity_threshold": "0.85",
+        "analysis_depth": "deep"
+      }
+    },
+    "rule_application": {
+      "name": "rule_application",
+      "category": "core",
+      "priority": "high",
+      "description": "Dynamic business rule application and versioning system",
+      "files": [
+        "video_processor/rule_application/*.py"
+      ],
+      "dependencies": [
+        "chain_of_thought",
+        "manual_generation"
+      ],
+      "api_endpoints": [
+        "/api/v1/rules/apply"
+      ],
+      "configuration": {
+        "rule_versioning": "enabled",
+        "rule_storage": "database",
+        "validation_mode": "strict"
+      }
+    },
+    "manual_generation": {
+      "name": "manual_generation",
+      "category": "core",
+      "priority": "critical",
+      "description": "Excel manual creation with structured worksheets and formatting",
+      "files": [
+        "video_processor/manual_generation/*.py"
+      ],
+      "dependencies": [
+        "rule_application"
+      ],
+      "api_endpoints": [
+        "/api/v1/manual/generate"
+      ],
+      "configuration": {
+        "output_format": "xlsx",
+        "worksheets": ["introduction", "index", "operational_steps"],
+        "template_system": "enabled"
+      }
+    },
+    "video_storage": {
+      "name": "video_storage",
+      "category": "integration",
+      "priority": "high",
+      "description": "MinIO object storage for videos, frames, and generated content",
+      "files": [
+        "video_processor/video_storage/*.py"
+      ],
+      "dependencies": [],
+      "api_endpoints": [
+        "/api/v1/storage/upload",
+        "/api/v1/storage/retrieve"
+      ],
+      "configuration": {
+        "storage_backend": "minio",
+        "bucket_naming": "project-based",
+        "retention_policy": "30_days"
+      }
+    },
+    "quality_analysis": {
+      "name": "quality_analysis",
+      "category": "services",
+      "priority": "medium",
+      "description": "Video and frame quality assessment and validation",
+      "files": [
+        "video_processor/quality_analysis/*.py"
+      ],
+      "dependencies": [
+        "video_input",
+        "frame_extraction"
+      ],
+      "api_endpoints": [
+        "/api/v1/quality/analyze"
+      ],
+      "configuration": {
+        "quality_metrics": ["brightness", "contrast", "resolution"],
+        "minimum_quality_score": "0.7"
+      }
+    },
+    "event_driven": {
+      "name": "event_driven",
+      "category": "services",
+      "priority": "medium",
+      "description": "Event-driven workflow automation and intelligent triggers",
+      "files": [
+        "video_processor/event_driven/*.py"
+      ],
+      "dependencies": [
+        "video_input",
+        "manual_generation"
+      ],
+      "api_endpoints": [
+        "/api/v1/events/trigger"
+      ],
+      "configuration": {
+        "trigger_types": ["video_upload", "processing_complete"],
+        "automation_level": "full"
+      }
+    },
+    "parallel_processing": {
+      "name": "parallel_processing",
+      "category": "utilities",
+      "priority": "medium",
+      "description": "High-performance parallel processing for OCR and image operations",
+      "files": [
+        "video_processor/parallel_processing/*.py"
+      ],
+      "dependencies": [
+        "ocr_processing",
+        "frame_extraction"
+      ],
+      "api_endpoints": [],
+      "configuration": {
+        "max_workers": "8",
+        "batch_size": "100",
+        "load_balancing": "enabled"
+      }
+    },
+    "web_application": {
+      "name": "web_application",
+      "category": "deployment",
+      "priority": "high",
+      "description": "Flask-based web application with modern UI",
+      "files": [
+        "video_processor/web_application/*.py"
+      ],
+      "dependencies": [
+        "video_input",
+        "manual_generation"
+      ],
+      "api_endpoints": [
+        "/api/v1/*",
+        "/ui/*"
+      ],
+      "configuration": {
+        "framework": "flask",
+        "frontend": "tailwindcss",
+        "pwa_features": "enabled"
+      }
+    }
+  },
+  "memory_modes": {
+    "conscious_ingest": true,
+    "auto_ingest": true
+  },
+  "retention_policies": {
+    "critical": "permanent",
+    "high": "2_years",
+    "medium": "1_year",
+    "low": "6_months"
+  }
+}

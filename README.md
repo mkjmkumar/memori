@@ -63,6 +63,13 @@ pip install openai
 export OPENAI_API_KEY="sk-your-openai-key-here"
 ```
 
+**🔐 Security Best Practices:**
+- Never commit API keys to version control
+- Use environment variables for sensitive configuration
+- Create a `.env` file for local development (see `.env.example`)
+- Use secret management services in production
+- Regularly rotate your API keys
+
 3. Run this Python script:
 
 ```python

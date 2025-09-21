@@ -106,6 +106,13 @@ export MEMORI_DATABASE__POOL_SIZE="20"
 export MEMORI_MEMORY__AUTO_CLEANUP="true"
 ```
 
+**🔐 Security Best Practices:**
+- Environment variables override configuration files
+- Use `.env` files for local development (add to `.gitignore`)
+- Never commit sensitive values to version control
+- Use secret management services in production
+- Environment variables use the pattern: `MEMORI_SECTION__SETTING_NAME`
+
 ```python
 from memori import ConfigManager, Memori
 
